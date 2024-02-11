@@ -1,28 +1,30 @@
+
+## Load library 
 library(reshape2)
 library(ggplot2)
-chirp_agrera5 <- read_csv("sum_data_chirp_agera5.csv")
-chirp_agrera5$month[chirp_agrera5$month=="jan"]<- "Jan"
-chirp_agrera5$month[chirp_agrera5$month=="Sept"]<- "Sep"
 
-dchirp<- chirp_agrera5[,c("month","Sum" , "Sum_Ghana_ch")]
+## read monthly precipitation data from Tanzania and  Ghana
+chirp_agrera5 <- read.csv("Data/chirp_agera5.csv")
+Sum_Tamsat <- read.csv("Data/TAMSAP/Sum_Tamsat.csv")
 
-colnames(dchirp)<- c("month","gauge","CHIRPS")
-dchirp$month <- factor(dchirp$month, levels = month.abb)
-dat.m <- melt(dchirp,id.vars='month', measure.vars=c('gauge',"CHIRPS"))
-p <- ggplot(dat.m) +geom_boxplot(aes(x=month, y=value, color=variable))+ylab("Cumulative rainfall (mm)")+labs(title = "Seasonal Analysis with boxplot in Ghana")
-p
+# visualize seasonality with box plot  ( pattern comparison of gauge based precipitation data with gridded data)
+seasonal_function<- function(dataset,country,product,var1,var2) {
+   
+   d<- dataset[,c("month",var1,var2)]
+   colnames(d)<- c("month","gauge",product)
+   d$month <- factor(d$month, levels = month.abb)
+   dat.m <- melt(d,id.vars='month', measure.vars=c('gauge',product))
+   p <- ggplot(dat.m) +geom_boxplot(aes(x=month, y=value, color=variable))+ylab("Cumulative rainfall (mm)")+labs(title = country)
+   p
+   
+}
 
-####################################
-data_Tamsat <- read_csv("sum_data_Tamsat.csv")
-data_Tamsat$month[data_Tamsat$month=="jan"]<- "Jan"
-data_Tamsat$month[data_Tamsat$month=="Sept"]<- "Sep"
+seasonal_function(chirp_agrera5,"Ghana","AgERA5","Prec_Ghana","prec_AgERA5_Ghana")
 
-dchirp<- data_Tamsat[,c("month","Sum_Tanz","Sum_Tanz_TS")]
+seasonal_function(chirp_agrera5,"Tanzania","AgERA5","prec_Tanz","prec_AgERA5_Tanz")
 
-colnames(dchirp)<- c("month","gauge","TAMSAT")
-dchirp$month <- factor(dchirp$month, levels = month.abb)
-dat.m <- melt(dchirp,id.vars='month', measure.vars=c('gauge',"TAMSAT"))
-p <- ggplot(dat.m) +geom_boxplot(aes(x=month, y=value, color=variable))+ylab("Cumulative rainfall (mm)")+labs(title = "Seasonal Analysis with boxplot in Tanzania")
-p
+seasonal_function(Sum_Tamsat,"Ghana","TAMSAT","Prec_Ghana","prec_Tamsat_Ghana")
+
+seasonal_function(Sum_Tamsat,"Tanzania","TAMSAT","prec_Tanz","prec_Tamsat_Tanz")
 
 #cor(dchirp$Sum_Tanz,dchirp$Sum_Tanz_TS)
