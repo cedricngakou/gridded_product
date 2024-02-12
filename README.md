@@ -1,2 +1,2 @@
 # gridded_product
-Performance evaluation of gridded product against Gauge based stations data
+Performance evaluation of gridded product against gauge based rain data
