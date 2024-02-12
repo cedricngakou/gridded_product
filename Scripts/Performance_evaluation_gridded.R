@@ -2,10 +2,10 @@ library(Metrics)
 library(stringr)
 #library(zoo)
 
-#threshold<- 1 value of rainfall to be consider as rain ##
-#Gauge<- ddd ## Historical weather data (stations)
-#Estimate<-dd1 # Gridded products     
-Qualitative-analysis<- function(threshold,Gauge,Estimate){
+#threshold<- 1 we assume that it is raining if rain value is greater than 1  ##
+#Gauge<- ## Historical weather data (stations)
+#Estimate<- ## Gridded products     
+Qualitative_analysis<- function(threshold,Gauge,Estimate){
    s1<-s2<-s3<- 0
    df0<- data.frame()
    df10<- data.frame()
@@ -46,7 +46,7 @@ Qualitative-analysis<- function(threshold,Gauge,Estimate){
          #print(POD)
          ### False Alarm Ratio
          FAR<- False_Alarm/(Hit+False_Alarm)
-         ### Crirical sucess Index
+         ### Critical success Index
          CSI<- Hit/(Hit+MISS+False_Alarm)
          ## Frequency bias index
          FBI<- (Hit+False_Alarm)/(Hit+MISS)
@@ -109,108 +109,50 @@ Quantitative_analysis<- function(threshold,Gauge,Estimate){
 
 
 
+coord_region<- read.csv("Data/coord_region.csv")
 
-
-
-
-ff<-coord_region1[coord_region1$country=="Tanzania",]
-ll<- na.omit(ff$name)
 ### preparing data for analysis and comparison 
-chirps_1981_2010 <- read_csv("chirps_1981_2010.csv")
-chirps_Month_1981_2010 <- read_csv("chirps_Month_1981_2010.csv")
-Agera5_1980_2010 <- read_csv("Agera5_1980_2010.csv")
-Agera5_Month_1980_2010 <- read_csv("Agera5_Month_1981_2010.csv")
-prec_1981_2010<- read_csv("prec_1981_2010.csv")
-prec_Month_1981_2010<- read_csv("prec_Month_1981_2010.csv")
-dd<-prec_1981_2010[,ll]
-ddm<- prec_Month_1981_2010[,ll]
-dd1<-chirps_1981_2010[,ll]
-dd2<-Agera5_1980_2010[,ll]
-dd3<-chirps_Month_1981_2010[,ll]
-dd4<-Agera5_Month_1980_2010[,ll]
-# Southern data 
-chirps_1998_2018 <- read_csv("chirps_1998_2018.csv")
-prec_1998_2018<- read_csv("prec_1998_2018.csv")
-dds<- prec_1998_2018[,c(2)]
-dd_c<- chirps_1998_2018[,c(3)]
 
-### subset the data in terms of wet season
-dff<-ddd
-dff1<-dd1
-dff2<-dd2
-dfff<-ddT
-date<-data.frame(date=seq.Date(as.Date("1983-01-01"),as.Date("2010-12-31"),by="day"))
-#dff1<- cbind(date,dff1)
-date[c("year",'month', 'day')] <- str_split_fixed(date$date, '-', 3)
-dff$month<-date$month 
-dff1$month<-date$month 
-dff2$month<-date$month 
-dfff$month<-date$month 
-l<-   dff$month %in% c("03","04","05","06","07","08","09","10")  #Ghana
-#l<-   dff$month %in% c("01","02","03","12")
-#dff$f[l]<- dff$var1[l]
-dfs<-dff[l,]
-dfss<-dfs[,-c(19)]
-dfs1<- dff1[l,]
-dfss1<- dfs1[,-c(19)]
-dfs11<- dff2[l,]
-dfss11<- dfs11[,-c(19)]
-dfff<- dfff[l,]
-dfff<- dfff[,-c(19)]
-#### Tamsat data preparation
-Tamsat_1983_2010 <- read_csv("Tamsat_1983_2010.csv")
+prec_1981_2010<-  read.csv("Data/Gauge data/prec_1981_2010.csv") ## read gauge data
+l<- names(prec_1981_2010)
+### filter station names coordinate present in the data from 1981 to 2010 
+coord_region1<- data.frame()
+for (i in l){
+   coord_region2<- coord_region[coord_region$name==i,]
+   d<- rbind(coord_region1,coord_region2)
+   coord_region1<- d
+   
+}
+
+
+ff<-coord_region1[coord_region1$country=="Tanzania",] 
+#ff<-coord_region1[coord_region1$country=="Ghana",]
+ll<- na.omit(ff$name)
+
+
+########  CHIRPS daily time scale  ######################
+chirps_1981_2010 <- read.csv("Data/CHIRPS/chirps_1981_2010.csv") 
+
+dd<- prec_1981_2010[,ll]
+dd1<- chirps_1981_2010[,ll]
+dc<- Quantitative_analysis(1,dd,dd1) ## Quantitative result
+dc1<- Qualitative_analysis(1,dd,dd1) ## Qualitative result
+
+########  AgARA5 daily time scale  ######################
+
+Agera5_1981_2010 <- read.csv("Data/AgERA5/Agera5_1981_2010.csv") ## read data
+dd2<- Agera5_1981_2010[,ll]
+dc_ag<- Quantitative_analysis(1,dd,dd2) ## Quantitative result
+dc_ag1<- Qualitative_analysis(1,dd,dd2) ## Qualitative result
+
+
+########  TAMSAT daily time scale  ######################
+Tamsat_1983_2010 <- read.csv("Data/TAMSAP/Tamsat_1983_2010.csv")
 
 ddT<-Tamsat_1983_2010[,ll]
-
 dd<- prec_1981_2010[prec_1981_2010$date>="1983-01-01",]
-
 ddd<-dd[,ll]
-
-dG_1<-Evaluation_Rainfall_product(1,dfss,dfff)
-write.xlsx(dG_1, file = "Ghana_Tamsat.xlsx", 
-           sheetName="quantitative_ws", append=TRUE)
-write_csv(dG_1,"Qualitative_Tanzania_Ag.csv")
-
-dd4[,c("Musoma")]
-
-########################## weekly####################"
-
-dd_prec<-read_csv("dprec_week_1981_2010.csv")
-dd_ch<-read_csv("chirps_week_1981_2010.csv")
-
-dd_Ag <-read_csv("Agera5_week_1981_2010.csv")
-dd_Ag$Musoma<-NA
-dd_Ag$Pokuase<-NA
-
-dd_prec_TS<-read_csv("Prec_TS_week_1983_2010.csv")
-dd_TS <-read_csv("Tamsat_week_1983_2010.csv")
-
-ddd<-dd_prec_TS[,ll]
-ddd1<- dd_TS[,ll]
-
-dG_1<-Quantitative_analysis(1,ddd,ddd1)
-write.xlsx(dG_1, file = "Tanzania_week_Tamsat.xlsx", 
-           sheetName="qualitative", append=TRUE)
+dc_TS<- Quantitative_analysis(1,ddd,ddT) ## Quantitative result
+dc_TS1<- Qualitative_analysis(1,ddd,ddT) ## Qualitative result
 
 
-########################## pendantal####################"
-
-ff<-coord_region1[coord_region1$country=="Ghana",]
-ll<- na.omit(ff$name)
-
-dd_prec<-read_csv("dprec_Pendantal_1983_2010.csv")
-dd_ch<-read_csv("chirps_Pendantal_1981_2010.csv")
-
-dd_Ag <-read_csv("Agera5_Pendantal_1981_2010.csv")
-dd_Ag$Musoma<-NA
-dd_Ag$Pokuase<-NA
-
-dd_prec_TS<-read_csv("Prec_TS_Pendantal_1983_2010.csv")
-dd_TS <-read_csv("Tamsat_Pendantal_1983_2010.csv")
-
-ddd<-dd_prec_TS[,ll]
-ddd1<- dd_TS[,ll]
-
-dG_1<-Evaluation_Rainfall_product(1,ddd,ddd1)
-write.xlsx(dG_1, file = "Ghana_Pendantal_Tamsat.xlsx", 
-           sheetName="qualitative", append=TRUE)

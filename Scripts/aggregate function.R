@@ -1,4 +1,11 @@
-aggragate_function <- function(df,scale,start_date,End_date){
+
+#df<- chirps_1981_2010
+#scale<-  15
+#start_date<- "1981-01-01"  ## minimum date in the data
+#End_date<- "2010-12-31"  ## maximun date in the data
+
+
+aggragate_function <- function(df,scale,start_date,End_date) {
    
    l<- names(df)
    #dd2<- dd
@@ -13,8 +20,8 @@ aggragate_function <- function(df,scale,start_date,End_date){
             message("missing data in station", i)
          }
          else{ 
-            step <- as.numeric(dfp$date - dfp$date[1]) %/% scale ## define the step 
-            TimeP <- dfp$date[1] + scale * step
+            step <- as.numeric(as.Date(dfp$date) - as.Date(dfp$date[1])) %/% scale ## define the step 
+            TimeP <- as.Date(dfp$date[1]) + scale * step
             dd<-aggregate(var ~ TimeP,dfp, sum) ## use the aggregate function
             dd<-dd[,c("TimeP","var")]
             colnames(dd)<- c("date",i) # change the variable name into station name
@@ -28,7 +35,9 @@ aggragate_function <- function(df,scale,start_date,End_date){
    
 }
 
-#dpre_week<-norm_aggragate(dprec)
-#dpre_week1<-norm_aggragate(dChirps)
-dpre_week2<- aggragate_function(dAgera5,15,"1981-01-01", "2010-12-31")
-#dpre_week3<-norm_aggragate(dTamsat1)
+#################
+chirps_1981_2010 <- read.csv("Data/CHIRPS/chirps_1981_2010.csv") 
+
+## aggregate from daily to weekly time scale
+chirps_weekly_1981_2010<- aggragate_function(chirps_1981_2010,7,"1981-01-01", "2010-12-31")
+
